@@ -107,7 +107,7 @@ jobs:
             image: ubuntu-cpp
             llvm: 18
             runs-on: ubuntu-24.04-riscv
-            timeout: 180
+            timeout: 300
             title: RISCV64 Ubuntu 24.04 C++
             ubuntu: 24.04
     env:
