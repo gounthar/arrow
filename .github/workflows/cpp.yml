@@ -75,7 +75,7 @@ jobs:
     name: ${{ matrix.title }}
     runs-on: ${{ matrix.runs-on }}
     if: ${{ !contains(github.event.pull_request.title, 'WIP') }}
-    timeout-minutes: 75
+    timeout-minutes: ${{ matrix.timeout || 75 }}
     strategy:
       fail-fast: false
       matrix:
@@ -107,6 +107,7 @@ jobs:
             image: ubuntu-cpp
             llvm: 18
             runs-on: ubuntu-24.04-riscv
+            timeout: 180
             title: RISCV64 Ubuntu 24.04 C++
             ubuntu: 24.04
             buildkit: "0"
