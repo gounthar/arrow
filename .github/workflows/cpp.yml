@@ -109,6 +109,7 @@ jobs:
             runs-on: ubuntu-24.04-riscv
             title: RISCV64 Ubuntu 24.04 C++
             ubuntu: 24.04
+            buildkit: "0"
     env:
       ARCH: ${{ matrix.arch }}
       ARROW_SIMD_LEVEL: ${{ matrix.simd-level }}
@@ -152,25 +153,16 @@ jobs:
             -o /usr/local/lib/docker/cli-plugins/docker-compose
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
           docker compose version
-
-          # Fix Docker daemon config - remove any HTTP registry mirrors
-          # that cause "Client sent an HTTP request to an HTTPS server"
-          echo "Current daemon.json:"
-          sudo cat /etc/docker/daemon.json 2>/dev/null || echo "(none)"
-          sudo mkdir -p /etc/docker
-          sudo tee /etc/docker/daemon.json > /dev/null << 'DAEMONJSON'
-          {
-            "features": { "containerd-snapshotter": true }
-          }
-          DAEMONJSON
-          sudo systemctl restart docker || sudo service docker restart
-          docker info | head -20
+          # Debug Docker setup
+          docker info 2>&1 | head -30
+          docker buildx ls 2>&1
       - name: Setup Archery
         run: python3 -m pip install -e dev/archery[docker]
       - name: Execute Docker Build
         env:
           ARCHERY_DOCKER_USER: ${{ secrets.DOCKERHUB_USER }}
           ARCHERY_DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+          DOCKER_BUILDKIT: ${{ matrix.buildkit || '1' }}
         run: |
           # GH-40558: reduce ASLR to avoid ASAN/LSAN crashes
           sudo sysctl -w vm.mmap_rnd_bits=28
